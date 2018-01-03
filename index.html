@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="お絵描きツールです">
+    <title>
+        すみぺいんと
+    </title>
+    <link href="./css/app.css" rel="stylesheet"/>
+
+    <meta name="viewport" content="width=900">
+    <link href="./css/font-awesome.min.css" rel="stylesheet"/>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
+            integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"
+            integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1"
+            crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@2.4.2/dist/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.min.js"></script>
+    <script src="./js/paint.js"></script>
+
+    <!-- Global Site Tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-78499026-5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments)
+        };
+        gtag('js', new Date());
+        gtag('config', 'UA-78499026-5');
+    </script>
+</head>
+<body>
+<div class="contents">
+    <div class="main">
+        <div id="canvasVue" v-cloak>
+
+            <nav class="navbar navbar-expand navbar-dark bg-dark">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <span class="navbar-brand">すみぺいんと</span>
+                    </div>
+                    <div class="navbar-collapse">
+                        <ul class="navbar-nav mr-auto">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="dropdownMenu"
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">操作</a>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenu">
+                                    <a class="dropdown-item" data-all-clear>全消し</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="mainContent">
+
+                <div class="float-left">
+                    <div>
+                        <canvas id="canvas" data-canvas></canvas>
+                    </div>
+
+
+                    <div>
+                        <div class="bottomMenuWrapper">
+                            <input class="brushSizeInput" type="range" min="1" max="30" step="1" v-model="brushSize"/>
+
+                            <span class="brushSizeNum">{{ updateBrushSizeView }}</span>
+
+                            <canvas id="brushSize" data-brush-size-view></canvas>
+
+                            | <span class="toolText">筆圧影響</span>
+
+                            <input class="pressureInput" type="range" min="0" max="9" step="1" v-model="pressureNum"/>
+
+                            <span class="pressureNum">{{ pressureNum }}</span>
+
+                            <div class="float-right">
+                                <div class="strokeCount">
+                                    ストローク: {{ strokeCount }}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div>
+                        <button id="show-modal"
+                                class="btn btn-outline-info cursorPointer tweetModalOpenButton"
+                                v-on:click="showModalButtonClick()">
+                            画像を保存
+                        </button>
+                    </div>
+
+                    <div class="notice">
+                        ※ 推奨環境: iPad Pro 12.9 インチ<br/>
+                        ※ 筆圧は Apple Pencil のみ動作を確認しています<br/>
+                        ※ 機能追加のご要望・不具合報告などは開発者(<a href="https://twitter.com/smison" target="_blank">@smison</a>)までお寄せ下さい<br/>
+                        ※ 本アプリケーションを利用したことによる一切の損害について、開発者は責任を持ちません<br/>
+                    </div>
+                </div>
+
+
+                <div class="float-left rightMenu">
+                    <button id="color" class="btn cursorPointer"
+                            v-bind:class="{ penTypeColor: penType == 'color',
+                    penTypeBlack: penType == 'black' }"
+                            v-on:click="changePenType()">
+                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                        <span v-if="penType === 'color'">色</span>
+                        <span v-if="penType === 'black'">黒</span>
+                    </button>
+                </div>
+            </div>
+            <div class="clear"></div>
+
+
+            <modal v-if="showModal"
+                   v-on:close="showModal = false"></modal>
+        </div>
+
+        <script type="text/x-template" id="modal-template">
+            <transition name="modal">
+                <div class="modal-mask" v-on:click="$emit('close')">
+                    <div class="modal-wrapper" v-on:click.stop="return;">
+                        <div class="modal-header">
+                            <i class="fa fa-times cursorPointer times transparentOnHover float-right" aria-hidden="true"
+                               v-on:click="$emit('close')">
+                            </i>
+                        </div>
+                        <div class="modal-container">
+                            <div class="form-group">
+                                <img class="previewImage" data-image/>
+                                <span class="saveText"> ↑ の画像を右クリックまたはタップ長押しで保存して下さい</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </script>
+    </div>
+</div>
+</body>
+</html>
