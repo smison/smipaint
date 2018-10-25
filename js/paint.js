@@ -76,6 +76,16 @@ $(document).ready(function () {
     loadCanvas();
 
     function loadCanvas() {
+        // 前回のキャンバスサイズ設定があれば読み込み、なければ背景をfill
+        var canvasWidth = window.localStorage.getItem("canvasWidth");
+        var canvasHeight = window.localStorage.getItem("canvasHeight");
+        if(canvasWidth) {
+            canvas.width = canvasWidth;
+        }
+        if(canvasHeight) {
+            canvas.height = canvasHeight;
+        }
+
         // 前回の描画内容があれば読み込み、なければ背景をfill
         var base64 = window.localStorage.getItem("canvas");
         if (base64) {
@@ -99,6 +109,15 @@ $(document).ready(function () {
     function saveCanvas() {
         window.localStorage.setItem("canvas", canvas.toDataURL());
         window.localStorage.setItem("strokeCount", vue.$data.strokeCount);
+        window.localStorage.setItem("canvasWidth", canvas.width);
+        window.localStorage.setItem("canvasHeight", canvas.height);
+    }
+
+    function setCanvasSize(width, height) {
+        canvas.width = width;
+        canvas.height = height;
+        window.localStorage.setItem("canvasWidth", width);
+        window.localStorage.setItem("canvasHeight", height);
     }
 
     function clearCanvas() {
@@ -213,6 +232,24 @@ $(document).ready(function () {
     });
     $(canvas).on('touchend', function (e) {
         drawEnd(e);
+    });
+
+    $('[data-set-canvas-size-default]').on('click', function (event) {
+        event.preventDefault();
+        if (!confirm('キャンバスサイズを変更します(全消しされます)。よろしいですか？')) {
+            return false;
+        }
+        setCanvasSize(800, 600);
+        clearCanvas();
+    });
+
+    $('[data-set-canvas-size-vertical]').on('click', function (event) {
+        event.preventDefault();
+        if (!confirm('キャンバスサイズを変更します(全消しされます)。よろしいですか？')) {
+            return false;
+        }
+        setCanvasSize(500, 900);
+        clearCanvas();
     });
 
     $('[data-all-clear]').on('click', function (event) {
