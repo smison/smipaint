@@ -56,7 +56,7 @@ $(document).ready(function () {
     };
 
     var canvas = $('[data-canvas]').get(0);
-    canvas.width = 800; // デフォルトではDOM要素のサイズと一致しないので指定が必要
+    canvas.width = 800;
     canvas.height = 600;
     var context = canvas.getContext('2d');
 
@@ -76,7 +76,7 @@ $(document).ready(function () {
     loadCanvas();
 
     function loadCanvas() {
-        // 前回のキャンバスサイズ設定があれば読み込み、なければ背景をfill
+        // 前回のキャンバスサイズ設定があれば読み込み
         var canvasWidth = window.localStorage.getItem("canvasWidth");
         var canvasHeight = window.localStorage.getItem("canvasHeight");
         if(canvasWidth) {
