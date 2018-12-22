@@ -243,6 +243,21 @@ $(document).ready(function () {
         clearCanvas();
     });
 
+    $('[data-set-canvas-size-horizontal-background]').on('click', function (event) {
+        event.preventDefault();
+        if (!confirm('キャンバスサイズを変更します(全消しされます)。よろしいですか？')) {
+            return false;
+        }
+        setCanvasSize(800, 600);
+        clearCanvas();
+
+        var backgroundImg = new Image();
+        backgroundImg.src = "./images/background.png";
+        backgroundImg.onload = function() {
+            context.drawImage(backgroundImg,0,0, 800, 600);
+        };
+    });
+
     $('[data-set-canvas-size-vertical]').on('click', function (event) {
         event.preventDefault();
         if (!confirm('キャンバスサイズを変更します(全消しされます)。よろしいですか？')) {
